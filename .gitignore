@@ -12,7 +12,7 @@ build/
 venv/
 develop-eggs/
 dist/
-downloads/
+download/
 eggs/
 .eggs/
 lib/

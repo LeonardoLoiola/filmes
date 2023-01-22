@@ -17,7 +17,7 @@ class Multidownload(Thread):
         ...
 
 # link = 'https://datasets.imdbws.com/name.basics.tsv.gz'
-# DOWNLOAD_DATABASE = "./"
+# DOWNLOAD_DATABASE = "./download"
 # a = Multidownload(link, DOWNLOAD_DATABASE)
 # a.start()
 # a.join()
