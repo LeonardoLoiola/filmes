@@ -33,7 +33,3 @@ class Checkmovies():
                     with open(extract_file, 'wb') as w:
                         w.write(file_content)
 
-
-# path = r"download\name.basics.tsv.gz"
-# path = path.split('\\')[1]
-# print()
