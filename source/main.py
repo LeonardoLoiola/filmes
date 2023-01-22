@@ -68,12 +68,3 @@ class Checkmovies():
         self.extract = True
         return True
 
-
-# path = r"E:\User\Leonardo\GIT\filme\download\name.basics.tsv.gz"
-# ti_m = os.path.getmtime(path)
-# m_ti = time.ctime(ti_m)
-# t_obj = time.strptime(m_ti)
-# T_stamp = time.strftime("%Y-%m-%d", t_obj)
-# print(T_stamp)
-a = Checkmovies()
-print(a.donwload_file())
