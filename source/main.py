@@ -13,7 +13,8 @@ class Checkmovies():
     DOWNLOAD_DATABASE = "./download"
 
     def __init__(self):
-
+        self.atualizar = True
+        self.extract = True
         ...
 
     def check_atualizacao(self):
@@ -25,6 +26,7 @@ class Checkmovies():
                  os.path.isfile(os.path.join(self.DOWNLOAD_DATABASE, f))]
         if not files:
             shutil.rmtree(self.DOWNLOAD_DATABASE)
+            self.atualizar = True
             return True
 
         for path in files:
@@ -34,13 +36,16 @@ class Checkmovies():
             T_stamp = time.strftime("%Y-%m-%d", t_obj)
             if date.fromisoformat(T_stamp) != today :
                 shutil.rmtree(self.DOWNLOAD_DATABASE)
+                self.atualizar = True
                 return True
 
+        self.atualizar = False
         return False
 
     def donwload_file(self):
-        check = self.check_atualizacao()
-        if not check:
+        self.check_atualizacao()
+        if not self.atualizar:
+            self.extract = False
             return True
         os.makedirs(self.DOWNLOAD_DATABASE, exist_ok=True)
         lst_donwload = []
@@ -59,6 +64,8 @@ class Checkmovies():
 
         for th in lst_donwload:
             th.join()
+
+        self.extract = True
         return True
 
 

@@ -13,6 +13,7 @@ venv/
 develop-eggs/
 dist/
 download/
+extract/
 eggs/
 .eggs/
 lib/
