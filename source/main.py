@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from thread_download import Multidownload
 import os
+import tarfile
 import time
 import shutil
 from datetime import date
@@ -10,7 +11,6 @@ import gzip
 class Checkmovies():
     URL_DATABASE = "https://datasets.imdbws.com/"
     DOWNLOAD_DATABASE = "./download"
-    EXTRACT_DATABASE = "./extract"
 
     def __init__(self):
         self.atualizar = True
@@ -67,6 +67,7 @@ class Checkmovies():
 
         self.extract = True
         return True
+
 
     def exctract_files(self):
         if self.extract:
