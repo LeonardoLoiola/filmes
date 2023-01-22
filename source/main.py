@@ -6,7 +6,7 @@ import tarfile
 import time
 import shutil
 from datetime import date
-
+import gzip
 
 class Checkmovies():
     URL_DATABASE = "https://datasets.imdbws.com/"
