@@ -7,7 +7,7 @@ import time
 import shutil
 from datetime import date
 import gzip
-
+import pandas as pd
 class Checkmovies():
     URL_DATABASE = "https://datasets.imdbws.com/"
     DOWNLOAD_DATABASE = "./download"
@@ -88,3 +88,36 @@ class Checkmovies():
                     with open(extract_file, 'wb') as w:
                         w.write(file_content)
 
+
+    def open_connection(self):
+        import mysql.connector
+        import config
+        self.conn = mysql.connector.connect(
+            host = config.d_keys['host'],
+            user = config.d_keys['user'],
+            password = config.d_keys['password'],
+            database = config.d_keys['database'])
+        
+        self.cursor = self.conn.cursor()
+
+    def close_connection(self):
+        self.cursor.close()
+        self.conn.close()
+
+
+    def base(self):
+        self.open_connection()
+        sql = """
+        select tconst from title_basics
+        """
+        self.cursor.execute(sql)
+        lst = self.cursor.fetchall()
+        df = pd.DataFrame(lst, columns=['tconst'])
+        print(df)
+        self.close_connection()
+
+    # def commit(ini, final, cursor, conn, tuples):
+    #     sql = f"""INSERT INTO title_basics (tconst,titleType,originalTitle,startYear,runtimeMinutes,genres)
+    #                 VALUES {', '.join(tuples[ini:final])}"""
+
+Checkmovies().base()
