@@ -54,7 +54,7 @@ class Checkmovies():
         return False
 
     def donwload_file(self):
-        self.check_atualizacao()
+        # self.check_atualizacao()
         if not self.atualizar:
             self.extract = False
             return True
@@ -80,11 +80,10 @@ class Checkmovies():
         return True
 
     def exctract_files(self):
-        if self.extract:
-            shutil.rmtree(self.EXTRACT_DATABASE)
+        try:
             os.makedirs(self.EXTRACT_DATABASE, exist_ok=True)
             onlyfiles = [os.path.join(self.DOWNLOAD_DATABASE, f) for f in os.listdir(self.DOWNLOAD_DATABASE) if
-                         os.path.isfile(os.path.join(self.DOWNLOAD_DATABASE, f))]
+                        os.path.isfile(os.path.join(self.DOWNLOAD_DATABASE, f))]
 
             for path in onlyfiles:
 
@@ -97,6 +96,10 @@ class Checkmovies():
                     extract_file = os.path.join(self.EXTRACT_DATABASE, file)
                     with open(extract_file, 'wb') as w:
                         w.write(file_content)
+            
+            return True
+        except:
+            return False
 
     def open_connection(self):
         import mysql.connector
@@ -131,37 +134,42 @@ class Checkmovies():
 
 
     def create_database(self):
-        for key, value in self.D_COLUMNS.items():
-            df = pd.read_csv(os.path.join(self.EXTRACT_DATABASE, key.replace('_', '.') + '.tsv'),
-                             sep='\t',
-                             usecols=value)
-
-        
-            if key == "title_basics":
-                df = df[df.titleType == 'movie']
-                df = df.fillna("").drop(columns = "titleType")
-                
-                df.originalTitle = df.originalTitle.apply(lambda x: str(x)[:255])
-
-            elif key == "title_crew":
-                df = df[df.tconst.isin(self.df_movies.tconst)]
-                df.directors = df.directors.apply(lambda x: str(x)[:255])
+        try:
+            for key, value in self.D_COLUMNS.items():
+                df = pd.read_csv(os.path.join(self.EXTRACT_DATABASE, key.replace('_', '.') + '.tsv'),
+                                sep='\t',
+                                usecols=value)
             
-            elif key == 'title_principals':
-                df = df[df.tconst.isin(self.df_movies.tconst)]
+                if key == "title_basics":
+                    df = df[df.titleType == 'movie']
+                    df = df.fillna("").drop(columns = "titleType")
+                    
+                    df.originalTitle = df.originalTitle.apply(lambda x: str(x)[:255])
 
-            elif key == "name_basics":
-                df = df[df.nconst.isin(self.df_person.nconst)]
-                # df['knownForTitles'] = df.knownForTitles.apply(lambda x: str(x).replace("\\N","").split(','))
+                elif key == "title_crew":
+                    df = df[df.tconst.isin(self.df_movies.tconst)]
+                    df.directors = df.directors.apply(lambda x: str(x)[:255])
+                
+                elif key == 'title_principals':
+                    df = df[df.tconst.isin(self.df_movies.tconst)]
 
-            elif key == "title_ratings":
-                df = df[df.tconst.isin(self.df_movies.tconst)]
-                df.averageRating = df.averageRating.astype('float64')
-                df.numVotes = df.numVotes.astype('int64')
+                elif key == "name_basics":
+                    df = df[df.nconst.isin(self.df_person.nconst)]
+                    # df['knownForTitles'] = df.knownForTitles.apply(lambda x: str(x).replace("\\N","").split(','))
 
-            tuples = [str(tuple(x)) for x in df.to_numpy()]
-            self.commit(tuples, key, value)
-            del df, tuples
+                elif key == "title_ratings":
+                    df = df[df.tconst.isin(self.df_movies.tconst)]
+                    df.averageRating = df.averageRating.astype('float64')
+                    df.numVotes = df.numVotes.astype('int64')
+
+                tuples = [str(tuple(x)) for x in df.to_numpy()]
+                self.commit(tuples, key, value)
+                del df, tuples
+            return True
+        
+        except Exception as e:
+            print(e)
+            return False
 
 
     def commit(self, tuples, key, value):
@@ -182,4 +190,59 @@ class Checkmovies():
         elif key == "title_principals":
             self.id_person()
 
-Checkmovies().create_database()
+    def delete_data(self):
+        try:
+            self.id_movies()
+            self.id_person()
+            for key in self.D_COLUMNS.keys():
+                if key != "name_basics":
+                    sql = f"""
+                        DELETE FROM {key}
+                        WHERE tconst in {str(tuple(self.df_movies.tconst.to_list()))}
+                    """
+                else:
+                    sql = f"""
+                        DELETE FROM {key}
+                        WHERE nconst in {str(tuple(self.df_person.nconst.to_list()))}
+                    """
+                # print(sql)
+                self.cursor.execute(sql)
+                self.conn.commit()
+
+            return True
+
+        except Exception as e:
+            print(e)
+            return False
+
+    def run_update(self):
+        try:
+            print("REMOVENDO DIRETORIOS")
+            shutil.rmtree(self.EXTRACT_DATABASE)
+            shutil.rmtree(self.DOWNLOAD_DATABASE)           
+        except:
+            pass
+        
+        print("INICIANDO DOWNLOADS")
+        check_download = self.donwload_file()
+        if check_download:
+            print("INICIANDO EXTRAÇÃO")
+            check_extract = self.exctract_files()
+            if check_extract:
+                print("APAGANDO OS DADOS EXISTENTES")
+                check_delete = self.delete_data()
+                del self.df_movies, self.df_person
+                if check_delete:
+                    print("FAZENDO O NOVO UPLOAD")
+                    check_upload = self.create_database()
+                    if check_upload:
+                        return True
+        
+        return False
+        
+
+
+
+app = Checkmovies()
+val = app.create_database()
+print(val)
