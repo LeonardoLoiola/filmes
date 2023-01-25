@@ -11,6 +11,18 @@ import pandas as pd
 class Checkmovies():
     URL_DATABASE = "https://datasets.imdbws.com/"
     DOWNLOAD_DATABASE = "./download"
+    D_COLUMNS = {
+        "title_basics": "(tconst,titleType,originalTitle,startYear,runtimeMinutes,genres)",
+        "a":"B
+    }
+
+
+
+
+
+
+
+
 
     def __init__(self):
         self.atualizar = True
@@ -115,9 +127,7 @@ class Checkmovies():
         df = pd.DataFrame(lst, columns=['tconst'])
         print(df)
         self.close_connection()
-    D_COLUMNS = {
-        "title_basics": "(tconst,titleType,originalTitle,startYear,runtimeMinutes,genres)"
-    }
+    
     # def commit(ini, final, cursor, conn, tuples):
     #     sql = f"""INSERT INTO title_basics (tconst,titleType,originalTitle,startYear,runtimeMinutes,genres)
     #                 VALUES {', '.join(tuples[ini:final])}"""
