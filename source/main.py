@@ -9,6 +9,14 @@ from datetime import date
 import gzip
 import pandas as pd
 from math import ceil
+from httpx import get, stream
+import config
+from googletrans import Translator
+import cv2
+from PIL import Image
+
+
+
 
 class Checkmovies():
     URL_DATABASE = "https://datasets.imdbws.com/"
@@ -21,6 +29,9 @@ class Checkmovies():
         "name_basics": ('nconst', 'primaryName', 'knownForTitles'),
         "title_ratings": ('tconst', 'averageRating', 'numVotes'),
     }
+    API_URL = 'https://api.themoviedb.org/3/movie/'
+    POSTER_URL = "https://image.tmdb.org/t/p/w500"
+    translator = Translator(service_urls=['translate.googleapis.com'])
 
     def __init__(self):
         self.atualizar = True
@@ -241,8 +252,41 @@ class Checkmovies():
         return False
         
 
+    def request_file(self, code):
+        
+        # code = "tt0816692"
+        params = {
+            "api_key":config.api_key,
+        }
+        req = get(self.API_URL+code, params = params)
+        
+        json_file = req.json()
+        poster_path = json_file['poster_path']
+        self.image_path = os.path.join(config.cache_path, code + '.png')
 
+        if os.path.isfile(self.image_path):
+            sql = f"""
+            select DISTINCT overview from overview
+            WHERE tconst = '{code}'
+            """
+            self.cursor.execute(sql)
+            self.overview = self.cursor.fetchall()[0][0]
 
+        else: 
+            with open(self.image_path, 'wb') as w:
+                with stream("GET", self.POSTER_URL+poster_path) as download_image:
+                    for chunck  in download_image.iter_bytes():
+                        w.write(chunck)
+
+            self.overview = self.translator.translate(json_file["overview"], dest = 'pt').text
+            sql = f"""INSERT INTO overview (tconst, overview)
+                    VALUES ('{code}', '{self.overview}')"""
+            self.cursor.execute(sql)
+            self.conn.commit()
+
+        
+           
 app = Checkmovies()
-val = app.create_database()
-print(val)
+# val = app.run_update()
+# app.request_file("tt0816692")
+print(app.overview)

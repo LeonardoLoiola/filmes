@@ -15,6 +15,7 @@ dist/
 download/
 extract/
 source/config.py
+cache/
 eggs/
 .eggs/
 lib/
