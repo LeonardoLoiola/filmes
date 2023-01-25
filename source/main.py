@@ -115,9 +115,9 @@ class Checkmovies():
         df = pd.DataFrame(lst, columns=['tconst'])
         print(df)
         self.close_connection()
-
+    D_COLUMNS = {
+        "title_basics": "(tconst,titleType,originalTitle,startYear,runtimeMinutes,genres)"
+    }
     # def commit(ini, final, cursor, conn, tuples):
     #     sql = f"""INSERT INTO title_basics (tconst,titleType,originalTitle,startYear,runtimeMinutes,genres)
     #                 VALUES {', '.join(tuples[ini:final])}"""
-
-Checkmovies().base()
