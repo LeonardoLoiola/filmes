@@ -270,16 +270,17 @@ class Checkmovies():
         params = {
             "api_key": config.api_key,
         }
+        self.code = code
         req = get(self.API_URL+code, params=params)
 
         json_file = req.json()
         poster_path = json_file['poster_path']
-        self.image_path = os.path.join(config.cache_path, code + '.png')
+        self.image_path = os.path.join(config.cache_path, self.code + '.png')
 
         if os.path.isfile(self.image_path):
             sql = f"""
             select DISTINCT overview from overview
-            WHERE tconst = '{code}'
+            WHERE tconst = '{self.code}'
             """
             self.cursor.execute(sql)
             self.overview = self.cursor.fetchall()[0][0]
@@ -292,8 +293,10 @@ class Checkmovies():
 
             self.overview = self.translator.translate(
                 json_file["overview"], dest='pt').text
+            
             sql = f"""INSERT INTO overview (tconst, overview)
-                    VALUES ('{code}', '{self.overview}')"""
+                    VALUES ('{self.code}', "{self.overview}")"""
+            # breakpoint()
             self.cursor.execute(sql)
             self.conn.commit()
 
